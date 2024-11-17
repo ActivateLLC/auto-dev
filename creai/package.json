@@ -10,12 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished",
-    "onCommand:creai.assist",
-    "onCommand:creai.review",
-    "onCommand:creai.toggleLiveView",
-    "onCommand:creai.refresh",
-    "onCommand:creai.advancedAnalysis"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
