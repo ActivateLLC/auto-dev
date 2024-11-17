@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
 	"compilerOptions": {
 		"module": "commonjs",
 		"target": "ES2020",
@@ -15,4 +16,23 @@
 		"noUnusedLocals": true
 	},
 	"exclude": ["node_modules", ".vscode-test"]
+=======
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noUnusedLocals": false,
+    "strictNullChecks": false
+  }
+>>>>>>> 611d001c63340f8a220cb8245eb799e4a34b8271
 }
