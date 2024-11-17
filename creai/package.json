@@ -1,0 +1,89 @@
+{
+  "name": "creai",
+  "displayName": "Creai.Dev",
+  "description": "fully autonomous",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:creai.assist",
+    "onCommand:creai.review",
+    "onCommand:creai.toggleLiveView",
+    "onCommand:creai.refresh",
+    "onCommand:creai.advancedAnalysis"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "creai.assist",
+        "title": "Creai: Get AI Assistance"
+      },
+      {
+        "command": "creai.review",
+        "title": "Creai: Review Code"
+      },
+      {
+        "command": "creai.toggleLiveView",
+        "title": "Creai: Toggle Live View"
+      },
+      {
+        "command": "creai.refresh",
+        "title": "Creai: Refresh Analysis"
+      },
+      {
+        "command": "creai.advancedAnalysis",
+        "title": "Creai: Perform Advanced Analysis"
+      }
+    ],
+    "configuration": {
+      "title": "Creai.Dev",
+      "properties": {
+        "creai.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your OpenAI API key"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "pnpm run check-types && pnpm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "build": "pnpm run compile",
+    "dev": "pnpm run watch && code --extensionDevelopmentPath=${workspaceFolder}"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.95.0",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.10.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "eslint": "^9.13.0",
+    "esbuild": "^0.24.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.6.3",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "@types/dotenv": "^8.2.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "openai": "^4.0.0"
+  }
+}
