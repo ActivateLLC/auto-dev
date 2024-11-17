@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { SearchService } from './search-service';
 
 export class UIHelper {
     private static readonly viewType = 'creai.resultView';
@@ -70,6 +71,8 @@ export class UIHelper {
     }
 
     private static getWebviewContent(title: string, content: string, isLive: boolean = false): string {
+        const searchHistory = SearchService.getSearchHistory();
+        
         return `
             <!DOCTYPE html>
             <html>
@@ -129,8 +132,31 @@ export class UIHelper {
             </head>
             <body>
                 <div class="toolbar">
-                    <input type="text" class="search-box" placeholder="Search in files..." id="searchInput">
+                    <div class="search-container">
+                        <input type="text" 
+                               class="search-box" 
+                               placeholder="Search in files..." 
+                               id="searchInput"
+                               list="searchSuggestions">
+                        <datalist id="searchSuggestions">
+                            ${searchHistory.map(query => `<option value="${query}">`).join('')}
+                        </datalist>
+                        <div class="search-options">
+                            <label><input type="checkbox" id="caseSensitive"> Case Sensitive</label>
+                            <label><input type="checkbox" id="wholeWord"> Whole Word</label>
+                            <label><input type="checkbox" id="regex"> Regex</label>
+                            <input type="text" 
+                                   id="includePattern" 
+                                   placeholder="Include pattern (e.g., *.ts)"
+                                   class="pattern-input">
+                            <input type="text" 
+                                   id="excludePattern" 
+                                   placeholder="Exclude pattern (e.g., node_modules)"
+                                   class="pattern-input">
+                        </div>
+                    </div>
                     <button onclick="search()">Search</button>
+                    <button onclick="searchInFile()">Search in Current File</button>
                     <button onclick="refresh()">Refresh</button>
                     <input type="text" class="terminal-input" placeholder="Terminal command..." id="terminalInput">
                     <button onclick="executeCommand()">Run</button>
@@ -142,8 +168,20 @@ export class UIHelper {
                     const vscode = acquireVsCodeApi();
                     
                     function search() {
-                        const searchText = document.getElementById('searchInput').value;
-                        vscode.postMessage({ command: 'search', text: searchText });
+                        const options = {
+                            query: document.getElementById('searchInput').value,
+                            caseSensitive: document.getElementById('caseSensitive').checked,
+                            wholeWord: document.getElementById('wholeWord').checked,
+                            regex: document.getElementById('regex').checked,
+                            includePattern: document.getElementById('includePattern').value,
+                            excludePattern: document.getElementById('excludePattern').value
+                        };
+                        vscode.postMessage({ command: 'search', options });
+                    }
+
+                    function searchInFile() {
+                        const query = document.getElementById('searchInput').value;
+                        vscode.postMessage({ command: 'searchInFile', text: query });
                     }
                     
                     function executeCommand() {

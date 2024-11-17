@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       dotenv:
-        specifier: ^16.4.5
+        specifier: ^16.0.3
         version: 16.4.5
       openai:
         specifier: ^4.0.0

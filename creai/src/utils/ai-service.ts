@@ -1,6 +1,12 @@
 import * as vscode from 'vscode';
 import OpenAI from 'openai';
 import { config } from 'dotenv';
+import { QuantumAnalysis } from './advanced/quantum';
+import { BlockchainAnalysis } from './advanced/blockchain';
+import { AIMLAnalysis } from './advanced/ai-ml';
+import { EdgeAnalysis } from './advanced/edge';
+import { CrossPlatformAnalysis } from './advanced/cross-platform';
+import { AnalysisResult } from '../types';
 
 // Initialize environment variables
 config();
@@ -8,14 +14,23 @@ config();
 export class AIService {
     private openai: OpenAI;
     private static instance: AIService;
-    private static MAX_TOKENS = 16000; // Increased for GPT-4
-    private static CHUNK_SIZE = 8000;  // Size for each analysis chunk
+    private static MAX_TOKENS = 16000;
+    private static CHUNK_SIZE = 8000;
 
     private constructor() {
-        const apiKey = process.env.OPENAI_API_KEY;
+        // Using vscode API for configuration
+        const vsConfig = vscode.workspace.getConfiguration('creai');
+        const apiKey = vsConfig.get<string>('openaiApiKey') || process.env.OPENAI_API_KEY;
+        
         if (!apiKey) {
-            throw new Error('OpenAI API key not found in environment variables');
+            // Using vscode API for error message
+            vscode.window.showErrorMessage('Please configure your OpenAI API key in VS Code settings or .env file');
+            throw new Error('OpenAI API key not found');
         }
+
+        // Show configuration status
+        vscode.window.setStatusBarMessage('Creai.Dev: Configured with API key', 3000);
+        
         this.openai = new OpenAI({ apiKey });
     }
 
@@ -241,5 +256,46 @@ Please provide:
         });
 
         return response.choices[0].message.content || this.getRandomFallbackMessage();
+    }
+
+    async performAdvancedAnalysis(files: { [key: string]: string }): Promise<string> {
+        const analyses = await Promise.all([
+            QuantumAnalysis.analyzeQuantumReadiness(this.openai, files),
+            BlockchainAnalysis.analyzeWeb3Patterns(this.openai, files),
+            AIMLAnalysis.analyzeAIPipelines(this.openai, files),
+            EdgeAnalysis.analyzeEdgeComputing(this.openai, files),
+            CrossPlatformAnalysis.analyzeCrossPlatform(this.openai, files)
+        ]);
+
+        const [quantum, blockchain, aiml, edge, crossPlatform] = analyses;
+
+        return this.formatAdvancedAnalysis(quantum, blockchain, aiml, edge, crossPlatform);
+    }
+
+    private formatAdvancedAnalysis(...results: AnalysisResult[]): string {
+        const sections = [
+            { title: "🔮 Quantum Computing Analysis", result: results[0] },
+            { title: "⛓️ Blockchain/Web3 Analysis", result: results[1] },
+            { title: "🤖 AI/ML Pipeline Analysis", result: results[2] },
+            { title: "📡 Edge Computing Analysis", result: results[3] },
+            { title: "🌐 Cross-Platform Analysis", result: results[4] }
+        ];
+
+        return sections.map(({ title, result }) => `
+# ${title}
+
+## Summary
+${result.summary}
+
+## Key Recommendations
+${result.recommendations.map(rec => `- ${rec}`).join('\n')}
+
+## Potential Risks
+${result.risks.map(risk => `- ${risk}`).join('\n')}
+
+## Next Steps
+${result.nextSteps.map(step => `- ${step}`).join('\n')}
+
+---`).join('\n\n');
     }
 } 

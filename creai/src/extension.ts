@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import { config } from 'dotenv';
 import { AIService } from './utils/ai-service';
 import { UIHelper } from './utils/ui-helper';
+
+// Load environment variables
+config();
 
 // Helper function to recursively get all files
 async function getAllFiles(dirPath: string, arrayOfFiles: string[] = [], ignore: Set<string> = new Set()): Promise<string[]> {
@@ -60,7 +64,9 @@ export function activate(context: vscode.ExtensionContext) {
 	let refreshCommand = vscode.commands.registerCommand('creai.refresh', async () => {
 		try {
 			const workspaceFolders = vscode.workspace.workspaceFolders;
-			if (!workspaceFolders) return;
+			if (!workspaceFolders) {
+				return;
+			}
 
 			const repoFiles = await getRepositoryFiles(workspaceFolders);
 			const aiService = AIService.getInstance();
@@ -179,6 +185,35 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	// Add new command registration in activate function
+	let advancedAnalysisCommand = vscode.commands.registerCommand('creai.advancedAnalysis', async () => {
+		try {
+			const workspaceFolders = vscode.workspace.workspaceFolders;
+			if (!workspaceFolders) {
+				vscode.window.showWarningMessage('Please open a workspace to use Creai.Dev advanced analysis');
+				return;
+			}
+
+			const statusBarItem = vscode.window.createStatusBarItem(
+				vscode.StatusBarAlignment.Right
+			);
+			statusBarItem.text = "$(sync~spin) Creai.Dev is performing advanced analysis...";
+			statusBarItem.show();
+
+			const repoFiles = await getRepositoryFiles(workspaceFolders);
+			const aiService = AIService.getInstance();
+			const analysis = await aiService.performAdvancedAnalysis(repoFiles);
+			
+			UIHelper.showResults('Advanced Analysis Results 🚀', analysis);
+			
+			statusBarItem.hide();
+			vscode.window.showInformationMessage('Advanced analysis complete!');
+			
+		} catch (error) {
+			vscode.window.showErrorMessage(`Creai.Dev advanced analysis error: ${error}`);
+		}
+	});
+
 	// Helper function to get repository files
 	async function getRepositoryFiles(workspaceFolders: readonly vscode.WorkspaceFolder[]) {
 		const ignoreSet = new Set([
@@ -211,7 +246,8 @@ export function activate(context: vscode.ExtensionContext) {
 		codeAssistCommand, 
 		reviewCommand, 
 		toggleLiveView, 
-		refreshCommand
+		refreshCommand, 
+		advancedAnalysisCommand
 	);
 }
 
