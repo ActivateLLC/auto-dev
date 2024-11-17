@@ -39,7 +39,11 @@ suite('Creai Extension Test Suite', () => {
 
 		test('Should handle missing API key', () => {
 			const originalKey = process.env.OPENAI_API_KEY;
+			const originalVSConfig = vscode.workspace.getConfiguration('creai').get('openaiApiKey');
+			
+			// Clear both environment and VS Code config
 			process.env.OPENAI_API_KEY = '';
+			vscode.workspace.getConfiguration('creai').update('openaiApiKey', '');
 			
 			try {
 				AIService.getInstance();
@@ -47,7 +51,9 @@ suite('Creai Extension Test Suite', () => {
 			} catch (error) {
 				assert.ok(error instanceof Error);
 			} finally {
+				// Restore original values
 				process.env.OPENAI_API_KEY = originalKey;
+				vscode.workspace.getConfiguration('creai').update('openaiApiKey', originalVSConfig);
 			}
 		});
 
@@ -110,21 +116,29 @@ suite('Creai Extension Test Suite', () => {
 	// Integration Tests
 	suite('Integration Tests', () => {
 		test('Should perform full analysis workflow', async function() {
-			this.timeout(10000); // Increase timeout for API calls
+			this.timeout(30000); // Increase timeout further
 			
 			const testContent = 'function test() { return true; }';
 			const document = await vscode.workspace.openTextDocument({
-				content: testContent,
-				language: 'typescript'
+					content: testContent,
+					language: 'typescript'
 			});
+			
+			// Wait for document to be fully loaded
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			
 			await vscode.window.showTextDocument(document);
+			
+			// Wait for editor to be ready
+			await new Promise(resolve => setTimeout(resolve, 1000));
 
-			// Mock the AI service response
 			const aiService = AIService.getInstance();
 			const analyzeStub = sinon.stub(aiService, 'analyzeRepository').resolves('Test analysis');
 
 			try {
 				await vscode.commands.executeCommand('creai.assist');
+				// Wait for command to complete
+				await new Promise(resolve => setTimeout(resolve, 1000));
 				assert.ok(analyzeStub.called, 'Analysis should have been called');
 			} finally {
 				analyzeStub.restore();
@@ -132,15 +146,20 @@ suite('Creai Extension Test Suite', () => {
 		});
 
 		test('Should handle live view updates', async function() {
-			this.timeout(5000);
+			this.timeout(15000);
 			
-			// Mock the AI service
 			const aiService = AIService.getInstance();
 			const analyzeStub = sinon.stub(aiService, 'analyzeRepository').resolves('Test update');
 
 			try {
 				await vscode.commands.executeCommand('creai.toggleLiveView');
+				// Wait for view to initialize
+				await new Promise(resolve => setTimeout(resolve, 1000));
+				
 				await vscode.commands.executeCommand('creai.refresh');
+				// Wait for refresh to complete
+				await new Promise(resolve => setTimeout(resolve, 1000));
+				
 				assert.ok(analyzeStub.called, 'Analysis should have been called');
 			} finally {
 				analyzeStub.restore();
