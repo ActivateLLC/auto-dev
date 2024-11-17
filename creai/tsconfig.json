@@ -18,11 +18,12 @@
 	},
 	"exclude": [
 		"node_modules",
-		".vscode-test",
-		"tailwind.config.ts",
-		"vite.config.ts"
+		".vscode-test"
 	],
 	"include": [
-		"src/**/*"
+		"src/extension.ts",
+		"src/utils/**/*",
+		"src/test/**/*",
+		"src/types.ts"
 	]
 }
