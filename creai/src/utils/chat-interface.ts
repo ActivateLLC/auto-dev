@@ -93,7 +93,9 @@ export class ChatInterface {
     }
 
     private static updateChatView() {
-        if (!this.panel) return;
+        if (!this.panel) {
+            return;
+        }
 
         this.panel.webview.html = this.getChatHtml();
     }

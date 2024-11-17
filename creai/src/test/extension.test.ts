@@ -38,16 +38,17 @@ suite('Creai Extension Test Suite', () => {
 		});
 
 		test('Should handle missing API key', () => {
-			// Temporarily remove API key
 			const originalKey = process.env.OPENAI_API_KEY;
-			delete process.env.OPENAI_API_KEY;
-
-			assert.throws(() => {
+			process.env.OPENAI_API_KEY = '';
+			
+			try {
 				AIService.getInstance();
-			}, Error);
-
-			// Restore API key
-			process.env.OPENAI_API_KEY = originalKey;
+				assert.fail('Should have thrown an error');
+			} catch (error) {
+				assert.ok(error instanceof Error);
+			} finally {
+				process.env.OPENAI_API_KEY = originalKey;
+			}
 		});
 
 		test('Should chunk large files correctly', async () => {
@@ -108,8 +109,9 @@ suite('Creai Extension Test Suite', () => {
 
 	// Integration Tests
 	suite('Integration Tests', () => {
-		test('Should perform full analysis workflow', async () => {
-			// Create test file
+		test('Should perform full analysis workflow', async function() {
+			this.timeout(10000); // Increase timeout for API calls
+			
 			const testContent = 'function test() { return true; }';
 			const document = await vscode.workspace.openTextDocument({
 				content: testContent,
@@ -117,22 +119,32 @@ suite('Creai Extension Test Suite', () => {
 			});
 			await vscode.window.showTextDocument(document);
 
-			// Trigger analysis
-			await vscode.commands.executeCommand('creai.assist');
+			// Mock the AI service response
+			const aiService = AIService.getInstance();
+			const analyzeStub = sinon.stub(aiService, 'analyzeRepository').resolves('Test analysis');
 
-			// Verify results
-			// @ts-ignore - accessing private property for testing
-			const panel = UIHelper['panel'];
-			assert.ok(panel, 'Analysis results not displayed');
+			try {
+				await vscode.commands.executeCommand('creai.assist');
+				assert.ok(analyzeStub.called, 'Analysis should have been called');
+			} finally {
+				analyzeStub.restore();
+			}
 		});
 
-		test('Should handle live view updates', async () => {
-			await vscode.commands.executeCommand('creai.toggleLiveView');
-			await vscode.commands.executeCommand('creai.refresh');
+		test('Should handle live view updates', async function() {
+			this.timeout(5000);
+			
+			// Mock the AI service
+			const aiService = AIService.getInstance();
+			const analyzeStub = sinon.stub(aiService, 'analyzeRepository').resolves('Test update');
 
-			// @ts-ignore - accessing private property for testing
-			const panel = UIHelper['panel'];
-			assert.ok(panel, 'Live view not updated');
+			try {
+				await vscode.commands.executeCommand('creai.toggleLiveView');
+				await vscode.commands.executeCommand('creai.refresh');
+				assert.ok(analyzeStub.called, 'Analysis should have been called');
+			} finally {
+				analyzeStub.restore();
+			}
 		});
 	});
 
