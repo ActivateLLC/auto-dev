@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { config } from 'dotenv';
 import { AIService } from './utils/ai-service';
 import { UIHelper } from './utils/ui-helper';
+import { ChatInterface } from './utils/chat-interface';
 
 // Load environment variables
 config();
@@ -242,12 +243,18 @@ export function activate(context: vscode.ExtensionContext) {
 		return repoFiles;
 	}
 
+	// Add to activate function
+	let chatCommand = vscode.commands.registerCommand('creai.openChat', () => {
+		ChatInterface.show();
+	});
+
 	context.subscriptions.push(
 		codeAssistCommand, 
 		reviewCommand, 
 		toggleLiveView, 
 		refreshCommand, 
-		advancedAnalysisCommand
+		advancedAnalysisCommand,
+		chatCommand
 	);
 }
 

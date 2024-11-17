@@ -298,4 +298,32 @@ ${result.nextSteps.map(step => `- ${step}`).join('\n')}
 
 ---`).join('\n\n');
     }
+
+    async processChatMessage(
+        message: string, 
+        context: string, 
+        history: Array<{role: string, content: string}>
+    ): Promise<string> {
+        const response = await this.openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [
+                {
+                    role: "system",
+                    content: `You are an advanced, conversational code assistant. You help developers by analyzing code, suggesting improvements, and answering questions. Current context:\n${context}`
+                },
+                ...history.map(msg => ({
+                    role: msg.role as 'user' | 'assistant',
+                    content: msg.content
+                })),
+                {
+                    role: "user",
+                    content: message
+                }
+            ],
+            temperature: 0.7,
+            max_tokens: 2000
+        });
+
+        return response.choices[0].message.content || this.getRandomFallbackMessage();
+    }
 } 

@@ -34,6 +34,10 @@
       {
         "command": "creai.advancedAnalysis",
         "title": "Creai: Perform Advanced Analysis"
+      },
+      {
+        "command": "creai.openChat",
+        "title": "Creai: Open Chat Interface"
       }
     ],
     "configuration": {
