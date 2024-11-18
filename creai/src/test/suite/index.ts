@@ -1,7 +1,6 @@
 import * as path from 'path';
 import Mocha = require('mocha');
 import * as globModule from 'glob';
-const { glob } = globModule;
 
 export function run(): Promise<void> {
     // Create the mocha test
@@ -14,7 +13,12 @@ export function run(): Promise<void> {
     const testsRoot = path.resolve(__dirname, '..');
 
     return new Promise((resolve, reject) => {
-        glob('**/**.test.js', { cwd: testsRoot }).then((files: string[]) => {
+        // Use promisify for glob
+        globModule.glob('**/**.test.js', { cwd: testsRoot }, (err: Error | null, files: string[]) => {
+            if (err) {
+                return reject(err);
+            }
+
             // Add files to the test suite
             files.forEach((f: string) => mocha.addFile(path.resolve(testsRoot, f)));
 
@@ -30,6 +34,6 @@ export function run(): Promise<void> {
             } catch (err) {
                 reject(err);
             }
-        }).catch(err => reject(err));
+        });
     });
 } 
